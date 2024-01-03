@@ -20,10 +20,10 @@
                     <!-- 投资计算器 -->
                     <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
                         <!-- 投资计算器 -->
-                        <h2 class="mb-4">投资计算器</h2>
+                        <h1 class="mb-4">投资计算器</h1>
                         <!-- 当前 -->
                         <div class="mb-3">
-                            <label class="form-label"><h3>当前数</h3></label>
+                            <label class="form-label"><h3>当前</h3></label>
                             <div class="row g-3">
                                 <div class="col">
                                     <label for="currentTrade" class="form-label">贸易</label>
@@ -67,39 +67,39 @@
                         </div>
                         <!-- 计算结果 -->
                         <div class="mb-4">
-                            <h4 class="mb-3">计算结果</h4>
+                            <h2 class="mb-3">计算结果</h2>
                             <!-- 投资数额 -->
                             <div class="mb-3">
                                 <label class="form-label"><h3>投资数额</h3></label>
                                 <div class="row g-3">
-                                    <div class="col">
-                                        <label class="form-label">贸易</label>
+                                    <div class="col d-flex align-items-baseline">
+                                        <label class="form-label mr-2">贸易:</label>
                                         <div id="investmentTrade" class="fw-bold"></div>
                                     </div>
-                                    <div class="col">
-                                        <label class="form-label">人口</label>
+                                    <div class="col d-flex align-items-baseline">
+                                        <label class="form-label mr-2">人口:</label>
                                         <div id="investmentPopulation" class="fw-bold"></div>
                                     </div>
-                                    <div class="col">
-                                        <label class="form-label">技术</label>
+                                    <div class="col d-flex align-items-baseline">
+                                        <label class="form-label mr-2">技术:</label>
                                         <div id="investmentTechnology" class="fw-bold"></div>
                                     </div>
                                 </div>
                             </div>
-                            
+                                                        
                             <div class="mb-3">
                                 <label class="form-label"><h3>需要月份</h3></label>
                                 <div class="row g-3">
-                                    <div class="col">
-                                        <label class="form-label">贸易</label>
+                                    <div class="col d-flex align-items-baseline">
+                                        <label class="form-label mr-2">贸易:</label>
                                         <div id="growthTimeTrade" class="fw-bold"></div>
                                     </div>
-                                    <div class="col">
-                                        <label class="form-label">人口</label>
+                                    <div class="col d-flex align-items-baseline">
+                                        <label class="form-label mr-2">人口:</label>
                                         <div id="growthTimePopulation" class="fw-bold"></div>
                                     </div>
-                                    <div class="col">
-                                        <label class="form-label">技术</label>
+                                    <div class="col d-flex align-items-baseline">
+                                        <label class="form-label mr-2">技术:</label>
                                         <div id="growthTimeTechnology" class="fw-bold"></div>
                                     </div>
                                 </div>
@@ -110,7 +110,17 @@
                     <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
                         
                         <h2>陆地探险</h2>
-                        <textarea id="nodeInput" class="form-control" rows="4" placeholder="输入节点数据，例如：\n琉球遗迹\t上5右上5\n铅矿脉\t右上3右下1"></textarea>
+                        <pre>
+此处输入数据，应该是每行一条记录，第一个值为发现物名称，第二个是坐标，中间用tab分割(excel直接复制两列即可)，
+对于需要两步触发的，第二步留空第一个值
+以那不勒斯为例：
+古罗马竞技场	上6
+路易斯西洋棋	上2右上9
+庞贝	右上1右下2
+	右上2右下5
+明矾	右下4
+                        </pre>
+                        <textarea id="nodeInput" class="form-control" rows="4" ></textarea>
                         <button id="calculatePath" class="btn btn-primary mt-3">计算最短路径</button>
                         <div id="pathOutput" class="mt-3"></div>
                     </div>
