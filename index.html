@@ -199,9 +199,9 @@
     }
     function calculateRapidGrowth(currentTrade, currentPopulation, currentTechnology, targetTrade, targetPopulation, targetTechnology) {
         // 计算成长时间
-        var tradeGrowthTime = (targetTrade - currentTrade) / 50;
-        var populationGrowthTime = (targetPopulation - currentPopulation) / 2500;
-        var technologyGrowthTime = (targetTechnology - currentTechnology) / 50;
+        var tradeGrowthTime = Math.ceil((targetTrade - currentTrade) / 50);
+        var populationGrowthTime = Math.ceil((targetPopulation - currentPopulation) / 2500);
+        var technologyGrowthTime = Math.ceil((targetTechnology - currentTechnology) / 50);
 
         // 计算投资额
         var tradeInvestment = tradeGrowthTime * 20000 + 130001;
