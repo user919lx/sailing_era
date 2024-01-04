@@ -19,98 +19,106 @@
                 <div class="tab-content" id="v-pills-tabContent">
                     <!-- 投资计算器 -->
                     <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
-                        <!-- 投资计算器 -->
                         <h1 class="mb-4">投资计算器</h1>
-                        <!-- 当前 -->
-                        <div class="mb-3">
-                            <label class="form-label"><h3>当前</h3></label>
-                            <div class="row g-3">
-                                <div class="col">
-                                    <label for="currentTrade" class="form-label">贸易</label>
-                                    <input type="number" class="form-control" id="currentTrade" value="200">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">输入参数</h5>
+                                <!-- 当前 -->
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>当前</strong></label>
+                                    <div class="row g-3">
+                                        <div class="col">
+                                            <label for="currentTrade" class="form-label">贸易</label>
+                                            <input type="number" class="form-control" id="currentTrade" value="200">
+                                        </div>
+                                        <div class="col">
+                                            <label for="currentPopulation" class="form-label">人口</label>
+                                            <input type="number" class="form-control" id="currentPopulation" value="15000">
+                                        </div>
+                                        <div class="col">
+                                            <label for="currentTechnology" class="form-label">技术</label>
+                                            <input type="number" class="form-control" id="currentTechnology" value="200">
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col">
-                                    <label for="currentPopulation" class="form-label">人口</label>
-                                    <input type="number" class="form-control" id="currentPopulation" value="15000">
+                                <!-- 目标 -->
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>目标</strong></label>
+                                    <div class="row g-3">
+                                        <div class="col">
+                                            <label for="targetTrade" class="form-label">贸易</label>
+                                            <input type="number" class="form-control" id="targetTrade" value="800">
+                                        </div>
+                                        <div class="col">
+                                            <label for="targetPopulation" class="form-label">人口</label>
+                                            <input type="number" class="form-control" id="targetPopulation" value="40000">
+                                        </div>
+                                        <div class="col">
+                                            <label for="targetTechnology" class="form-label">技术</label>
+                                            <input type="number" class="form-control" id="targetTechnology" value="1000">
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col">
-                                    <label for="currentTechnology" class="form-label">技术</label>
-                                    <input type="number" class="form-control" id="currentTechnology" value="200">
+                                <div class="mb-4">
+                                    <label for="investmentStrategy" class="form-label">投资策略</label>
+                                    <select class="form-select mr-4" id="investmentStrategy">
+                                        <option value="minimumInvestment" selected>最低投资</option>
+                                        <option value="rapidGrowth">极速增长</option>
+                                    </select>
+                                    <button id="calculateButton" class="btn btn-primary mt-3">点击计算</button>
                                 </div>
                             </div>
                         </div>
-                        <!-- 目标 -->
-                        <div class="mb-3">
-                            <label class="form-label"><h3>目标</h3></label>
-                            <div class="row g-3">
-                                <div class="col">
-                                    <label for="targetTrade" class="form-label">贸易</label>
-                                    <input type="number" class="form-control" id="targetTrade" value="800">
-                                </div>
-                                <div class="col">
-                                    <label for="targetPopulation" class="form-label">人口</label>
-                                    <input type="number" class="form-control" id="targetPopulation" value="40000">
-                                </div>
-                                <div class="col">
-                                    <label for="targetTechnology" class="form-label">技术</label>
-                                    <input type="number" class="form-control" id="targetTechnology" value="1000">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <!-- <label for="investmentStrategy" class="form-label"><h3>投资策略</h3>/label> -->
-                            <select class="form-select" id="investmentStrategy">
-                                <option selected>选择策略</option>
-                                <option value="minimumInvestment">最低投资</option>
-                                <option value="rapidGrowth">极速增长</option>
-                            </select>
-                        </div>
-                        <!-- 计算结果 -->
-                        <div class="mb-4">
-                            <h2 class="mb-3">计算结果</h2>
-                            <!-- 投资数额 -->
-                            <div class="mb-3">
-                                <label class="form-label"><h3>投资数额</h3></label>
-                                <div class="row g-3">
-                                    <div class="col d-flex align-items-baseline">
-                                        <label class="form-label mr-2">贸易:</label>
-                                        <div id="investmentTrade" class="fw-bold"></div>
+                        <div class="card mb-4">
+                            <!-- 计算结果 -->
+                            <div class="card-body">
+                                <h5 class="card-title">计算结果</h5>
+                                <div class="mb-4">
+                                    <!-- 投资数额 -->
+                                    <div class="mb-3">
+                                        <label class="form-label"><strong>投资数额</strong></label>
+                                        <div class="row g-3">
+                                            <div class="col d-flex align-items-baseline">
+                                                <label class="form-label mr-2">贸易:</label>
+                                                <div id="investmentTrade" class="fw-bold"></div>
+                                            </div>
+                                            <div class="col d-flex align-items-baseline">
+                                                <label class="form-label mr-2">人口:</label>
+                                                <div id="investmentPopulation" class="fw-bold"></div>
+                                            </div>
+                                            <div class="col d-flex align-items-baseline">
+                                                <label class="form-label mr-2">技术:</label>
+                                                <div id="investmentTechnology" class="fw-bold"></div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col d-flex align-items-baseline">
-                                        <label class="form-label mr-2">人口:</label>
-                                        <div id="investmentPopulation" class="fw-bold"></div>
-                                    </div>
-                                    <div class="col d-flex align-items-baseline">
-                                        <label class="form-label mr-2">技术:</label>
-                                        <div id="investmentTechnology" class="fw-bold"></div>
-                                    </div>
-                                </div>
-                            </div>
-                                                        
-                            <div class="mb-3">
-                                <label class="form-label"><h3>需要月份</h3></label>
-                                <div class="row g-3">
-                                    <div class="col d-flex align-items-baseline">
-                                        <label class="form-label mr-2">贸易:</label>
-                                        <div id="growthTimeTrade" class="fw-bold"></div>
-                                    </div>
-                                    <div class="col d-flex align-items-baseline">
-                                        <label class="form-label mr-2">人口:</label>
-                                        <div id="growthTimePopulation" class="fw-bold"></div>
-                                    </div>
-                                    <div class="col d-flex align-items-baseline">
-                                        <label class="form-label mr-2">技术:</label>
-                                        <div id="growthTimeTechnology" class="fw-bold"></div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><strong>增长时间(月)</strong></label>
+                                        <div class="row g-3">
+                                            <div class="col d-flex align-items-baseline">
+                                                <label class="form-label mr-2">贸易:</label>
+                                                <div id="growthTimeTrade" class="fw-bold"></div>
+                                            </div>
+                                            <div class="col d-flex align-items-baseline">
+                                                <label class="form-label mr-2">人口:</label>
+                                                <div id="growthTimePopulation" class="fw-bold"></div>
+                                            </div>
+                                            <div class="col d-flex align-items-baseline">
+                                                <label class="form-label mr-2">技术:</label>
+                                                <div id="growthTimeTechnology" class="fw-bold"></div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                     </div>
                     <!-- 陆地探险 -->
                     <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
-                        
                         <h2>陆地探险</h2>
-                        <pre>
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <pre>
 此处输入数据，应该是每行一条记录，第一个值为发现物名称，第二个是坐标
 中间用tab分割(excel直接复制两列即可)，如果是手动输入，可以用中/英文逗号或者空格分割
 对于需要两步触发的，第二步留空第一个值
@@ -121,16 +129,25 @@
 庞贝	右上1右下2
     右上2右下5
 明矾	右下4
-                        </pre>
-                        <textarea id="nodeInput" class="form-control" rows="4" ></textarea>
-                        <button id="calculatePath" class="btn btn-primary mt-3">计算最短路径</button>
-                        <div id="pathOutput" class="mt-3"></div>
+                                </pre>
+                                <textarea id="nodeInput" class="form-control" rows="4" ></textarea>
+                                <button id="calculatePath" class="btn btn-primary mt-3">计算最短路径</button>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">输出结果</h5>
+                                    <div id="pathOutput" class="mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
 <!-- 引入jQuery库 -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 
@@ -217,7 +234,7 @@
             technologyGrowthTime: technologyResult.months
         };
     }
-    document.getElementById("investmentStrategy").addEventListener("change", function() {
+    document.getElementById("calculateButton").addEventListener("click", function() {
         // 获取输入值
         var currentTrade = parseInt(document.getElementById("currentTrade").value);
         var currentPopulation = parseInt(document.getElementById("currentPopulation").value);
@@ -234,7 +251,6 @@
         if (strategy === "rapidGrowth") {
             result = calculateRapidGrowth(currentTrade, currentPopulation, currentTechnology, targetTrade, targetPopulation, targetTechnology);
         } else if (strategy === "minimumInvestment") {
-            // result = calculateRapidGrowth(currentTrade, currentPopulation, currentTechnology, targetTrade, targetPopulation, targetTechnology);
             result = calculateMinimumInvestment(currentTrade, currentPopulation, currentTechnology, targetTrade, targetPopulation, targetTechnology);
         }
 
@@ -395,7 +411,7 @@
     }
 
     function findShortestTspPath(nodes, endPoint = null) {
-        const origin = new Node("", "原点");
+        const origin = new Node("", "城镇");
         if (!endPoint) {
             endPoint = origin;
         }
@@ -459,7 +475,7 @@
         const nodes = generateNodesByList(input);
         const [shortestPath, minSteps] = findShortestTspPath(nodes);
 
-        let output = `最短路径(总步长 ${minSteps}):<br>`;
+        let output = `总步长 ${minSteps}<br><br>`;
         let totalStep = 0;
         shortestPath.forEach(move => {
             totalStep += move[3];
