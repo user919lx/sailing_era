@@ -111,13 +111,15 @@
                         
                         <h2>陆地探险</h2>
                         <pre>
-此处输入数据，应该是每行一条记录，第一个值为发现物名称，第二个是坐标，中间用tab分割(excel直接复制两列即可)，
+此处输入数据，应该是每行一条记录，第一个值为发现物名称，第二个是坐标
+中间用tab分割(excel直接复制两列即可)，如果是手动输入，可以用中/英文逗号或者空格分割
 对于需要两步触发的，第二步留空第一个值
-以那不勒斯为例：
+以那不勒斯驿站为例：
+
 古罗马竞技场	上6
 路易斯西洋棋	上2右上9
 庞贝	右上1右下2
-	右上2右下5
+    右上2右下5
 明矾	右下4
                         </pre>
                         <textarea id="nodeInput" class="form-control" rows="4" ></textarea>
@@ -353,7 +355,10 @@
         const lines = str.trim().split('\n');
 
         for (let i = 0; i < lines.length; i++) {
-            const [name, coor] = lines[i].split('\t').map(s => s.trim());
+            // 使用正则表达式替换所有分隔符为单个空格
+            const sanitizedLine = lines[i].replace(/[\t,， ]+/g, ' ');
+            const [name, coor] = sanitizedLine.split(' ').map(s => s.trim());
+
             if (name !== '') {
                 nodes.push(new Node(coor, name));
             } else {
@@ -361,7 +366,6 @@
                 nodes[lastIndex].extensions.push(new Node(coor, `${nodes[lastIndex].name}-第二步`));
             }
         }
-
         return nodes;
     }
 
