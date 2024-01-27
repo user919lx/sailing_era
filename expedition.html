@@ -411,12 +411,9 @@
                 let clue = row[filteredDf.columns.indexOf('线索')] || '无';
                 let clueSource = row[filteredDf.columns.indexOf('线索来源')];
                 let rewards = row[filteredDf.columns.indexOf('获得')];
-                if (str(clueSource).includes()){
-
-                }
                 let cardHtml = `
                     <div class="col col-lg-3 col-md-4 col-12">
-                    <div class="card ${cardStyle}">
+                    <div class="card">
                         <div class="card-header">${title}</div>
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
