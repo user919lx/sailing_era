@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>风帆纪元-投资计算</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">投资计算器</h1>
+        <div class="card mb-4">
+            <div class="card-header">
+                输入参数
+            </div>
+            <div class="card-body">
+                <!-- 当前 -->
+                <div class="mb-3">
+                    <label class="form-label"><strong>当前</strong></label>
+                    <div class="row g-3">
+                        <div class="col">
+                            <label for="currentTrade" class="form-label">贸易</label>
+                            <input type="number" class="form-control" id="currentTrade" value="200">
+                        </div>
+                        <div class="col">
+                            <label for="currentPopulation" class="form-label">人口</label>
+                            <input type="number" class="form-control" id="currentPopulation" value="15000">
+                        </div>
+                        <div class="col">
+                            <label for="currentTechnology" class="form-label">技术</label>
+                            <input type="number" class="form-control" id="currentTechnology" value="200">
+                        </div>
+                    </div>
+                </div>
+                <!-- 目标 -->
+                <div class="mb-3">
+                    <label class="form-label"><strong>目标</strong></label>
+                    <div class="row g-3">
+                        <div class="col">
+                            <label for="targetTrade" class="form-label">贸易</label>
+                            <input type="number" class="form-control" id="targetTrade" value="800">
+                        </div>
+                        <div class="col">
+                            <label for="targetPopulation" class="form-label">人口</label>
+                            <input type="number" class="form-control" id="targetPopulation" value="40000">
+                        </div>
+                        <div class="col">
+                            <label for="targetTechnology" class="form-label">技术</label>
+                            <input type="number" class="form-control" id="targetTechnology" value="1000">
+                        </div>
+                    </div>
+                </div>
+                <!-- 额外加成 -->
+                <div class="form-group mb-3">
+                    <label for="checkboxes"><strong>额外加成</strong></label>
+                    <div id="checkboxes" class="row p-5">
+                        <div class="col-6">
+                            <input type="checkbox" id="hasReward" class="form-check-input">
+                            <label for="hasReward" class="form-check-label">兑换投资奖励</label>
+                        </div>
+                        <div class="col-6">
+                            <input type="checkbox" id="hasSp" class="form-check-input">
+                            <label for="hasSp" class="form-check-label">菲奥娜特性</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- 投资策略 -->
+                <div class="mb-4">
+                    <label for="investmentStrategy" class="form-label">投资策略</label>
+                    <select class="form-select mr-4" id="investmentStrategy">
+                        <option value="minimumInvestment" selected>最低投资</option>
+                        <option value="rapidGrowth">极速增长</option>
+                    </select>
+                    
+                    <button id="calculateButton" class="btn btn-primary mt-3">点击计算</button>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-4">
+            <!-- 计算结果 -->
+            <div class="card-body">
+                <h5 class="card-title">计算结果</h5>
+                <div class="mb-4">
+                    <!-- 投资数额 -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>投资数额</strong></label>
+                        <div class="row g-3">
+                            <div class="col d-flex align-items-baseline">
+                                <label class="form-label mr-2">贸易:</label>
+                                <div id="investmentTrade" class="fw-bold"></div>
+                            </div>
+                            <div class="col d-flex align-items-baseline">
+                                <label class="form-label mr-2">人口:</label>
+                                <div id="investmentPopulation" class="fw-bold"></div>
+                            </div>
+                            <div class="col d-flex align-items-baseline">
+                                <label class="form-label mr-2">技术:</label>
+                                <div id="investmentTechnology" class="fw-bold"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>增长时间(月)</strong></label>
+                        <div class="row g-3">
+                            <div class="col d-flex align-items-baseline">
+                                <label class="form-label mr-2">贸易:</label>
+                                <div id="growthTimeTrade" class="fw-bold"></div>
+                            </div>
+                            <div class="col d-flex align-items-baseline">
+                                <label class="form-label mr-2">人口:</label>
+                                <div id="growthTimePopulation" class="fw-bold"></div>
+                            </div>
+                            <div class="col d-flex align-items-baseline">
+                                <label class="form-label mr-2">技术:</label>
+                                <div id="growthTimeTechnology" class="fw-bold"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <!-- 投资计算器 -->
+    <script>
+        let ext_plus = 0;
+        let ext_mult = 1;
+        const investments = [
+            { cost: 20000, inc: 5, threshold: 150000 },
+            { cost: 15000, inc: 2, threshold: 60000 },
+            { cost: 10000, inc: 1, threshold: 0 },
+        ];
+        function invesResult(inv, divisor) {
+            let inc = 0;
+            let months = 0;
+            investments.forEach(investment => {
+                let threshold = investment.threshold;
+                if (inv > threshold) {
+                    let costPermonth = investment.cost * ext_mult;
+                    let incPerMonth = investment.inc * divisor * ext_mult + ext_plus;
+                    let monThis = threshold > 0 ? Math.ceil((inv - threshold) / costPermonth) : Math.floor((inv - threshold) / costPermonth);
+                    let cosThis = monThis * costPermonth;
+                    let incThis = monThis * incPerMonth;
+                    months += monThis;
+                    inv -= cosThis;
+                    inc += incThis;
+                }
+            });
+            return { months, inc, inv };
+        }
+        function calculateMinInvestment(currentValue, targetValue, divisor) {
+            let minInvestment = 0;
+            let diff = targetValue - currentValue;
+            let inc = 0;
+            let months = 0;  // 确保定义了months变量
+            while (inc < diff) {
+                if(minInvestment==0){
+                    minInvestment = 9999
+                }
+                minInvestment += 1;
+                let result = invesResult(minInvestment, divisor);
+                inc = result.inc;
+                months = result.months;  // 更新months的值
+            }
+            return { minInvestment, months };  // 返回minInvestment和months
+        }
+        function calculateRapidGrowth(currentTrade, currentPopulation, currentTechnology, targetTrade, targetPopulation, targetTechnology) {
+            let cost = 20000 * ext_mult;
+            let inc_trade_tech = 50 * ext_mult + ext_plus;
+            let inc_pop = 2500 * ext_mult + ext_plus;
+            // 计算成长时间
+            var tradeGrowthTime = Math.ceil((targetTrade - currentTrade) / inc_trade_tech);
+            var populationGrowthTime = Math.ceil((targetPopulation - currentPopulation) / inc_pop);
+            var technologyGrowthTime = Math.ceil((targetTechnology - currentTechnology) / inc_trade_tech);
+
+            // 计算投资额
+            var tradeInvestment = tradeGrowthTime * cost + 150001 - cost;
+            var populationInvestment = populationGrowthTime * cost + 150001 - cost;
+            var technologyInvestment = technologyGrowthTime * cost + 150001 - cost;
+
+            return {
+                tradeGrowthTime,
+                populationGrowthTime,
+                technologyGrowthTime,
+                tradeInvestment,
+                populationInvestment,
+                technologyInvestment
+            };
+        }
+        function calculateMinimumInvestment(currentTrade, currentPopulation, currentTechnology, targetTrade, targetPopulation, targetTechnology) {
+            const divisors = {
+                "技术贸易": 10,
+                "人口": 500
+            };
+            let tradeResult = calculateMinInvestment(currentTrade, targetTrade , divisors["技术贸易"]);
+            let populationResult = calculateMinInvestment(currentPopulation, targetPopulation, divisors["人口"]);
+            let technologyResult = calculateMinInvestment(currentTechnology , targetTechnology, divisors["技术贸易"]);
+            return {
+                tradeInvestment: tradeResult.minInvestment,
+                tradeGrowthTime: tradeResult.months,
+                populationInvestment: populationResult.minInvestment,
+                populationGrowthTime: populationResult.months,
+                technologyInvestment: technologyResult.minInvestment,
+                technologyGrowthTime: technologyResult.months
+            };
+        }
+        document.getElementById("calculateButton").addEventListener("click", function() {
+            // 奖励/特性加成
+            if (document.getElementById('hasReward').checked) {
+                ext_plus = 20;
+            } else{
+                ext_plus = 0;
+            }
+            if (document.getElementById('hasSp').checked) {
+                ext_mult = 1.5;
+            } else{
+                ext_mult = 1;
+            }
+
+            // 获取输入值
+            var currentTrade = parseInt(document.getElementById("currentTrade").value);
+            var currentPopulation = parseInt(document.getElementById("currentPopulation").value);
+            var currentTechnology = parseInt(document.getElementById("currentTechnology").value);
+
+            var targetTrade = parseInt(document.getElementById("targetTrade").value);
+            var targetPopulation = parseInt(document.getElementById("targetPopulation").value);
+            var targetTechnology = parseInt(document.getElementById("targetTechnology").value);
+
+            var strategy = document.getElementById("investmentStrategy").value;
+            var result;
+
+            // 根据策略选择不同的计算函数
+            if (strategy === "rapidGrowth") {
+                result = calculateRapidGrowth(currentTrade, currentPopulation, currentTechnology, targetTrade, targetPopulation, targetTechnology);
+            } else if (strategy === "minimumInvestment") {
+                result = calculateMinimumInvestment(currentTrade, currentPopulation, currentTechnology, targetTrade, targetPopulation, targetTechnology);
+            }
+
+            // 显示结果
+            if (result) {
+                document.getElementById("investmentTrade").textContent = Math.round(result.tradeInvestment);
+                document.getElementById("investmentPopulation").textContent = Math.round(result.populationInvestment);
+                document.getElementById("investmentTechnology").textContent = Math.round(result.technologyInvestment);
+                document.getElementById("growthTimeTrade").textContent = Math.round(result.tradeGrowthTime);
+                document.getElementById("growthTimePopulation").textContent = Math.round(result.populationGrowthTime);
+                document.getElementById("growthTimeTechnology").textContent = Math.round(result.technologyGrowthTime);
+            }
+        });
+    </script>
+</body>
+</html>

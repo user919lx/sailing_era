@@ -291,7 +291,7 @@
         }
         function showData() {
             const selectedLocation = document.getElementById('location-select').value;
-            const filteredDf = df.loc({rows: df['地点'].eq(selectedLocation).and(df['发现物/事件'].apply((x)=>{return !x.includes("回城")}))});
+            const filteredDf = df.loc({rows: df['地点'].eq(selectedLocation).and(df['发现物/事件'].apply((x)=>{return (!x.includes("扎营") && !x.includes("帐篷")) }))});
             // 清空旧的多选框
             const checkboxesDiv = document.getElementById('checkboxes');
             checkboxesDiv.innerHTML = '';
@@ -332,12 +332,15 @@
             const eventNodes = generateNodesByDf(filteredDf);
             let [shortestPath, minSteps] = findShortestTspPath(eventNodes);
             const selectedLocation = document.getElementById('location-select').value;
-            const retrunDf = df.loc({rows: df['地点'].eq(selectedLocation).and(df['发现物/事件'].str.includes("回城"))});
+            const retrunDf = df.loc({rows: df['地点'].eq(selectedLocation).and(df['发现物/事件'].str.includes("扎营").or(df['发现物/事件'].str.includes("帐篷")))});
+            console.log("原点路长", minSteps)
+            // retrunDf.print();
             retrunDf.values.forEach(row => {
                 let coor = row[retrunDf.columns.indexOf('位置')];
                 let name = row[retrunDf.columns.indexOf('发现物/事件')]
-                console.log(coor, name);
+                // console.log(coor, name);
                 let [path, steps] = findShortestTspPath(eventNodes, endPoint=new Node(coor, name));
+                console.log(`${name} 路长 ${steps}`)
                 if(steps < minSteps){
                     shortestPath = path
                     minSteps = steps
@@ -345,7 +348,7 @@
             });
             let totalStep = 0;
             const accordionContainer = document.getElementById('accordionContainer');
-            accordionContainer.innerHTML = `<p>共计路程 ${minSteps} 天</p>`
+            accordionContainer.innerHTML = `<p>共计路程 ${minSteps} 天，点击每段路程查看详情</p>`
             shortestPath.forEach((move, index) => {
                 totalStep += move[3];
                 // 为每个 move 创建一个数据行
@@ -358,9 +361,11 @@
                         </h2>
                         <div id="flush-collapse${index}" class="accordion-collapse collapse" data-bs-parent="#accordionContainer">
                             <div class="accordion-body">
-                                <p>当前位置：${move[0]}</p>
-                                <p>步长: ${move[3]}</p>
-                                <p>累计步长: ${totalStep}</p>
+                                <ul>
+                                    <li>当前位置：${move[0]}</li>
+                                    <li>步长: ${move[3]}</li>
+                                    <li>累计步长: ${totalStep}</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -400,7 +405,7 @@
             skillMap.forEach((value, key) => {
                 skillSummary.push(`${key}${value}`);
             });
-            skillListElement.textContent = "技能汇总：" + skillSummary.join(', ');
+            skillListElement.textContent = "技能要求汇总：" + skillSummary.join(', ') + " ；a/b/c表示满足任一即可";
             // 为每个选中的事件添加卡片信息
             const eventListDiv = document.getElementById('eventList');
             eventListDiv.innerHTML = ''; // 清空现有内容
@@ -427,8 +432,6 @@
 
                 eventListDiv.innerHTML += cardHtml;
             });
-
-
         };
     </script>
 </body>
