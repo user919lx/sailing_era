@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>w</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/danfojs@1.1.2/lib/bundle.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- <h1 class="mb-4">陆地探险</h1> -->
+        <!-- 输入参数 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                输入参数
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="region-select">区域:</label>
+                    <select id="region-select" class="form-control" onchange="updateLocations()">
+                        <!-- 区域选项将被动态加载 -->
+                        <option value="">请选择地点</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="location-select">地点:</label>
+                    <select id="location-select" class="form-control" onchange="showData()">
+                        <!-- 地点选项将被动态加载 -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="checkboxes">选择发现物/事件</label>
+                    <div id="checkboxes" class="row p-5"></div>
+                </div>
+                <button id="calculatePath" class="btn btn-primary mt-3" onclick="CalBtnOnClick()">计算最佳路线</button>
+            </div>
+        </div>
+        <!-- 参考信息 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                发现物/事件 信息
+            </div>
+            <div class="card-body">
+                <p id="skillList"></p>
+                <div id="eventList" class="row row-cols-1 row-cols-md-3 g-4"></div>
+            </div>
+        </div>
+        <!-- 输出结果 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                输出结果
+            </div>
+            <div class="card-body">
+                <div id="accordionContainer" class="accordion accordion-flush"></div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <!-- 计算最佳路线 -->
+    <script>
+        class Node {
+            constructor(path, name = null, extensions = null) {
+                this.path = path;
+                this.name = name || path;
+                const { q, r } = Node.polarToAbsolute(path);
+                this.q = q;
+                this.r = r;
+                this.extensions = extensions || [];
+            }
+
+            static polarToAbsolute(path) {
+                const directions = {
+                    "上": [0, -1],
+                    "下": [0, 1],
+                    "左上": [-1, 0],
+                    "右下": [1, 0],
+                    "左下": [-1, 1],
+                    "右上": [1, -1],
+                };
+                const pattern = /(上|下|左上|右下|左下|右上)(\d+)/g;
+                let match;
+                let q = 0, r = 0;
+                while ((match = pattern.exec(path)) !== null) {
+                    const direction = match[1]; // 第一个捕获的分组
+                    const steps = match[2]; // 第二个捕获的分组
+                    const [dq, dr] = directions[direction];
+                    q += dq * parseInt(steps, 10);
+                    r += dr * parseInt(steps, 10);
+                }
+                return { q, r };
+            }
+
+            static sign(x) {
+                return x > 0 ? 1 : x < 0 ? -1 : 0;
+            }
+
+            static absoluteToPolar(q, r) {
+        const dirSign = {
+                "上下": {"1": "下", "-1": "上"},
+                "左上右下": {"1": "右下", "-1": "左上"},
+                "左下右上": {"1": "右上", "-1": "左下"}
+            };
+            let path = [];
+            const signQ = Node.sign(q);
+            const signR = Node.sign(r);
+            const absQ = Math.abs(q);
+            const absR = Math.abs(r);
+
+            if (signR * signQ > 0) {
+                path = [`${dirSign['上下'][signQ.toString()]}${absR}`, `${dirSign['左上右下'][signQ.toString()]}${absQ}`];
+            } else if (q === 0 && r === 0) {
+                return '';
+            } else if (q === 0) {
+                path = [`${dirSign['上下'][signR.toString()]}${absR}`];
+            } else if (r === 0) {
+                path = [`${dirSign['左上右下'][signQ.toString()]}${absQ}`];
+            } else if (q * r < 0) {
+                const absMin = Math.min(absQ, absR);
+                path = [`${dirSign['左下右上'][signQ.toString()]}${absMin}`];
+                const path2 = Node.absoluteToPolar(signQ * (absQ - absMin), signQ * (-absR + absMin));
+                path.push(path2);
+            }
+            return path.join('');
+        }
+
+            getAbsoluteCoordinates() {
+                return { q: this.q, r: this.r };
+            }
+
+            getPolarCoordinates() {
+                return Node.absoluteToPolar(this.q, this.r);
+            }
+
+            stepCount() {
+                return Node.polarStepCount(this.path);
+            }
+
+            static polarStepCount(path) {
+                const pattern = /(上|下|左上|右下|左下|右上)(\d+)/g;
+                let match;
+                let c = 0;
+                while ((match = pattern.exec(path)) !== null) {
+                    c += parseInt(match[2], 10);
+                }
+                return c;
+            }
+
+            pathTo(otherNode) {
+                const qDiff = otherNode.q - this.q;
+                const rDiff = otherNode.r - this.r;
+                const pathStr = Node.absoluteToPolar(qDiff, rDiff);
+                return { steps: Node.polarStepCount(pathStr), path: pathStr };
+            }
+
+            formatName() {
+                return `${this.name}(${this.path})`;
+            }
+        }
+        function generateNodesByDf(nodeDf) {
+            const nodes = [];
+            // 假设 nodeDf 是一个已经过滤好的 DataFrame，并且包含 '发现物/事件' 和 '位置' 列
+            nodeDf.values.forEach(row => {
+                const name = row[nodeDf.columns.indexOf('发现物/事件')];
+                const coor = row[nodeDf.columns.indexOf('位置')];
+                const coor_ext = row[nodeDf.columns.indexOf('位置-第二步')];
+                // 检查 name 是否为空
+                if (coor_ext == '') {
+                    nodes.push(new Node(coor, name));
+                } else {
+                    nodes.push(new Node(coor, name, extensions=[new Node(coor_ext, `${name}-第二步`)]));
+                }
+            });
+
+            return nodes;
+        }
+        function generatePermutations(nodes) {
+            // 获取所有节点（包括主节点和扩展节点）
+            const allNodes = nodes.concat(nodes.flatMap(node => node.extensions));
+
+            // 生成所有节点的排列
+            const allPermutations = permute(allNodes);
+
+            // 过滤掉不符合条件的排列
+            return allPermutations.filter(isValidPermutation);
+        }
+        function isValidPermutation(perm) {
+            const visited = new Set();
+            for (let node of perm) {
+                if (visited.has(node)) {
+                    continue;  // 跳过已访问的节点
+                }
+                if (node.extensions && node.extensions.some(ext => visited.has(ext))) {
+                    return false;  // 如果是主节点，检查其扩展节点是否在之前出现
+                }
+                visited.add(node);
+            }
+            return true;
+        }
+        function findShortestTspPath(nodes, endPoint = null) {
+            const origin = new Node("", "城镇");
+            if (!endPoint) {
+                endPoint = origin;
+            }
+            // 生成所有可能的节点排列
+            const permutations = generatePermutations(nodes);
+            // 初始化最短路径和最小步长
+            let shortestPath = null;
+            let minSteps = Infinity;
+
+            // 遍历每个排列
+            for (let perm of permutations) {
+                let currentSteps = 0;
+                let currentPath = [];
+
+                // 从原点到第一个点
+                let { steps, path } = origin.pathTo(perm[0]);
+                currentSteps += steps;
+                currentPath.push([origin.formatName(), perm[0].formatName(), path, steps]);
+
+                // 遍历排列中的点
+                for (let i = 0; i < perm.length - 1; i++) {
+                    ({ steps, path } = perm[i].pathTo(perm[i + 1]));
+                    currentSteps += steps;
+                    currentPath.push([perm[i].formatName(), perm[i + 1].formatName(), path, steps]);
+                }
+
+                // 从最后一个点回到原点
+                ({steps, path} = perm[perm.length - 1].pathTo(endPoint));
+                currentSteps += steps;
+                currentPath.push([perm[perm.length - 1].formatName(), endPoint.formatName(), path, steps]);
+
+                // 检查是否为最短路径
+                if (currentSteps < minSteps) {
+                    minSteps = currentSteps;
+                    shortestPath = currentPath;
+                }
+            }
+            return [shortestPath, minSteps];
+        }
+        // 生成所有排列的辅助函数
+        function permute(arr) {
+            if (arr.length === 0) return [[]];
+            const first = arr[0], rest = arr.slice(1);
+            const withoutFirst = permute(rest);
+            let allPermutations = [];
+
+            withoutFirst.forEach(perm => {
+                for (let i = 0; i <= perm.length; i++) {
+                    const permWithFirst = [...perm.slice(0, i), first, ...perm.slice(i)];
+                    allPermutations.push(permWithFirst);
+                }
+            });
+            return allPermutations;
+        }
+    </script>
+    <!-- 处理前端变化 -->
+    <script>
+        let df; // 用于存储DataFrame对象
+        window.addEventListener('load', function() {
+            dfd.readCSV('data/expedition.csv').then(data => {
+                df = data.fillNa("");
+                populateRegionSelect();
+            });
+        });
+        function populateRegionSelect() {
+            const uniqueRegions = df['区域'].unique().values;
+            const regionSelect = document.getElementById('region-select');
+            uniqueRegions.forEach(region => {
+                let option = document.createElement('option');
+                option.value = region;
+                option.textContent = region;
+                regionSelect.appendChild(option);
+            });
+        }
+        function updateLocations() {
+            const selectedRegion = document.getElementById('region-select').value;
+            let query_df = df.query(df['区域'].eq(selectedRegion));
+            const uniqueRegions = df['区域'].unique().values;
+            const locationSelect = document.getElementById('location-select');
+            locationSelect.innerHTML = '';
+            query_df['地点'].unique().values.forEach(location => {
+                let option = document.createElement('option');
+                option.value = location;
+                option.textContent = location;
+                locationSelect.appendChild(option);
+            });
+            if (locationSelect.options.length > 0) {
+                locationSelect.selectedIndex = 0;
+                let event = new Event('change');
+                locationSelect.dispatchEvent(event);
+            }
+        }
+        function showData() {
+            const selectedLocation = document.getElementById('location-select').value;
+            const filteredDf = df.loc({rows: df['地点'].eq(selectedLocation).and(df['发现物/事件'].apply((x)=>{return !x.includes("回城")}))});
+            // 清空旧的多选框
+            const checkboxesDiv = document.getElementById('checkboxes');
+            checkboxesDiv.innerHTML = '';
+            // 创建复选框
+            filteredDf['发现物/事件'].unique().values.forEach(item => {
+                let colDiv = document.createElement('div');
+                colDiv.classList.add('col-3'); // 每个复选框占据一行的四分之一
+                let checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = item;
+                checkbox.name = item;
+                checkbox.value = item;
+                checkbox.checked = true;  // 设置为默认勾选
+                checkbox.classList.add('form-check-input'); // Bootstrap 的复选框样式
+                let label = document.createElement('label');
+                label.htmlFor = item;
+                label.appendChild(document.createTextNode(item));
+                label.classList.add('form-check-label'); // Bootstrap 的标签样式
+                colDiv.appendChild(checkbox);
+                colDiv.appendChild(label);
+
+                checkboxesDiv.appendChild(colDiv);
+            });
+        }
+        function CalBtnOnClick() {
+            let selectedItems = [];
+            document.querySelectorAll('#checkboxes input[type="checkbox"]:checked').forEach(checkbox => {
+                selectedItems.push(checkbox.value);
+            });
+            let valuesToFilter = df['发现物/事件'].values;
+            let rowsToInclude = [];
+            selectedItems.forEach((item) => {
+                let filteredRows = valuesToFilter.flatMap((value, idx) => value === item ? idx : []);
+                rowsToInclude.push(...filteredRows);
+            });
+            let filteredDf = df.loc({rows: rowsToInclude});
+            // 计算最佳路线
+            const eventNodes = generateNodesByDf(filteredDf);
+            let [shortestPath, minSteps] = findShortestTspPath(eventNodes);
+            const selectedLocation = document.getElementById('location-select').value;
+            const retrunDf = df.loc({rows: df['地点'].eq(selectedLocation).and(df['发现物/事件'].str.includes("回城"))});
+            retrunDf.values.forEach(row => {
+                let coor = row[retrunDf.columns.indexOf('位置')];
+                let name = row[retrunDf.columns.indexOf('发现物/事件')]
+                console.log(coor, name);
+                let [path, steps] = findShortestTspPath(eventNodes, endPoint=new Node(coor, name));
+                if(steps < minSteps){
+                    shortestPath = path
+                    minSteps = steps
+                }
+            });
+            let totalStep = 0;
+            const accordionContainer = document.getElementById('accordionContainer');
+            accordionContainer.innerHTML = `<p>共计路程 ${minSteps} 天</p>`
+            shortestPath.forEach((move, index) => {
+                totalStep += move[3];
+                // 为每个 move 创建一个数据行
+                let accordionItem = `
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse${index}" aria-expanded="false" aria-controls="flush-collapse${index}">
+                                ${move[2]} --> ${move[1]}
+                            </button>
+                        </h2>
+                        <div id="flush-collapse${index}" class="accordion-collapse collapse" data-bs-parent="#accordionContainer">
+                            <div class="accordion-body">
+                                <p>当前位置：${move[0]}</p>
+                                <p>步长: ${move[3]}</p>
+                                <p>累计步长: ${totalStep}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                accordionContainer.innerHTML += accordionItem;
+            });
+            // 汇总技能需求
+            const skillMap = new Map();
+            filteredDf.values.forEach(row => {
+                const processSkill = (skillStr) => {
+                    if (!skillStr) return; // 如果是空字符串，则跳过
+                    if (skillStr.includes('/')) {
+                        skillMap.set(skillStr, '');
+                    } else {
+                        skillStr.split('+').forEach(skill => {
+                            const match = skill.trim().match(/(\D+)(\d*)/);
+                            if (match) {
+                                const skillName = match[1];
+                                const skillValue = match[2];
+                                // console.log(`skillStr=${skillStr}, skillName=${skillName}, skillValue=${skillValue}`)
+                                const existingValue = skillMap.get(skillName);
+                                if (!existingValue || (skillValue && parseInt(skillValue, 10) > parseInt(existingValue, 10)) ) {
+                                    skillMap.set(skillName, skillValue || '');
+                                }
+                            }
+                        });
+                    }
+                };
+                // 处理 '技能' 和 '技能-第二步' 字段
+                processSkill(row[filteredDf.columns.indexOf('技能')]);
+                processSkill(row[filteredDf.columns.indexOf('技能-第二步')]);
+            });
+            // skillMap 现在包含技能名称和最高数值
+            // console.log(Object.fromEntries(skillMap));
+            const skillListElement = document.getElementById('skillList');
+            const skillSummary = [];
+            skillMap.forEach((value, key) => {
+                skillSummary.push(`${key}${value}`);
+            });
+            skillListElement.textContent = "技能汇总：" + skillSummary.join(', ');
+            // 为每个选中的事件添加卡片信息
+            const eventListDiv = document.getElementById('eventList');
+            eventListDiv.innerHTML = ''; // 清空现有内容
+            filteredDf.values.forEach(row => {
+                let title = row[filteredDf.columns.indexOf('发现物/事件')];
+                let skill = row[filteredDf.columns.indexOf('技能')] || '无';
+                let skillStepTwo = row[filteredDf.columns.indexOf('技能-第二步')];
+                let clue = row[filteredDf.columns.indexOf('线索')] || '无';
+                let clueSource = row[filteredDf.columns.indexOf('线索来源')];
+                let rewards = row[filteredDf.columns.indexOf('获得')];
+                if (str(clueSource).includes()){
+
+                }
+                let cardHtml = `
+                    <div class="col col-lg-3 col-md-4 col-12">
+                    <div class="card ${cardStyle}">
+                        <div class="card-header">${title}</div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                            `;
+                if (skill) cardHtml += `<li class="list-group-item">技能：${skill}</li>`;
+                if (skillStepTwo) cardHtml += `<li class="list-group-item">技能-第二步：${skillStepTwo}</li>`;
+                if (clue) cardHtml += `<li class="list-group-item">线索：${clue}</li>`;
+                if (clueSource) cardHtml += `<li class="list-group-item">线索来源：${clueSource}</li>`;
+                if (rewards) cardHtml += `<li class="list-group-item">获得：${rewards}</li>`;
+                cardHtml += `</div></div></div>`;
+
+                eventListDiv.innerHTML += cardHtml;
+            });
+
+
+        };
+    </script>
+</body>
+</html>
