@@ -317,11 +317,12 @@
             });
         }
         function CalBtnOnClick() {
+            const selectedLocation = document.getElementById('location-select').value;
             let selectedItems = [];
             document.querySelectorAll('#checkboxes input[type="checkbox"]:checked').forEach(checkbox => {
                 selectedItems.push(checkbox.value);
             });
-            let valuesToFilter = df['发现物/事件'].values;
+            let valuesToFilter = df.query(df['地点'].eq(selectedLocation))['发现物/事件'].values;
             let rowsToInclude = [];
             selectedItems.forEach((item) => {
                 let filteredRows = valuesToFilter.flatMap((value, idx) => value === item ? idx : []);
@@ -331,16 +332,12 @@
             // 计算最佳路线
             const eventNodes = generateNodesByDf(filteredDf);
             let [shortestPath, minSteps] = findShortestTspPath(eventNodes);
-            const selectedLocation = document.getElementById('location-select').value;
+            
             const retrunDf = df.loc({rows: df['地点'].eq(selectedLocation).and(df['发现物/事件'].str.includes("扎营").or(df['发现物/事件'].str.includes("帐篷")))});
-            console.log("原点路长", minSteps)
-            // retrunDf.print();
             retrunDf.values.forEach(row => {
                 let coor = row[retrunDf.columns.indexOf('位置')];
                 let name = row[retrunDf.columns.indexOf('发现物/事件')]
-                // console.log(coor, name);
                 let [path, steps] = findShortestTspPath(eventNodes, endPoint=new Node(coor, name));
-                console.log(`${name} 路长 ${steps}`)
                 if(steps < minSteps){
                     shortestPath = path
                     minSteps = steps
@@ -351,7 +348,6 @@
             accordionContainer.innerHTML = `<p>共计路程 ${minSteps} 天，点击每段路程查看详情</p>`
             shortestPath.forEach((move, index) => {
                 totalStep += move[3];
-                // 为每个 move 创建一个数据行
                 let accordionItem = `
                     <div class="accordion-item">
                         <h2 class="accordion-header">
@@ -376,7 +372,7 @@
             const skillMap = new Map();
             filteredDf.values.forEach(row => {
                 const processSkill = (skillStr) => {
-                    if (!skillStr) return; // 如果是空字符串，则跳过
+                    if (!skillStr) return;
                     if (skillStr.includes('/')) {
                         skillMap.set(skillStr, '');
                     } else {
@@ -385,7 +381,6 @@
                             if (match) {
                                 const skillName = match[1];
                                 const skillValue = match[2];
-                                // console.log(`skillStr=${skillStr}, skillName=${skillName}, skillValue=${skillValue}`)
                                 const existingValue = skillMap.get(skillName);
                                 if (!existingValue || (skillValue && parseInt(skillValue, 10) > parseInt(existingValue, 10)) ) {
                                     skillMap.set(skillName, skillValue || '');
@@ -394,21 +389,17 @@
                         });
                     }
                 };
-                // 处理 '技能' 和 '技能-第二步' 字段
                 processSkill(row[filteredDf.columns.indexOf('技能')]);
                 processSkill(row[filteredDf.columns.indexOf('技能-第二步')]);
             });
-            // skillMap 现在包含技能名称和最高数值
-            // console.log(Object.fromEntries(skillMap));
             const skillListElement = document.getElementById('skillList');
             const skillSummary = [];
             skillMap.forEach((value, key) => {
                 skillSummary.push(`${key}${value}`);
             });
             skillListElement.textContent = "技能要求汇总：" + skillSummary.join(', ') + " ；a/b/c表示满足任一即可";
-            // 为每个选中的事件添加卡片信息
             const eventListDiv = document.getElementById('eventList');
-            eventListDiv.innerHTML = ''; // 清空现有内容
+            eventListDiv.innerHTML = '';
             filteredDf.values.forEach(row => {
                 let title = row[filteredDf.columns.indexOf('发现物/事件')];
                 let skill = row[filteredDf.columns.indexOf('技能')] || '无';
@@ -429,7 +420,6 @@
                 if (clueSource) cardHtml += `<li class="list-group-item">线索来源：${clueSource}</li>`;
                 if (rewards) cardHtml += `<li class="list-group-item">获得：${rewards}</li>`;
                 cardHtml += `</div></div></div>`;
-
                 eventListDiv.innerHTML += cardHtml;
             });
         };
