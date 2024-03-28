@@ -316,19 +316,16 @@
                 checkboxesDiv.appendChild(colDiv);
             });
         }
+        
         function CalBtnOnClick() {
+            
             const selectedLocation = document.getElementById('location-select').value;
+            
             let selectedItems = [];
             document.querySelectorAll('#checkboxes input[type="checkbox"]:checked').forEach(checkbox => {
                 selectedItems.push(checkbox.value);
             });
-            let valuesToFilter = df.query(df['地点'].eq(selectedLocation))['发现物/事件'].values;
-            let rowsToInclude = [];
-            selectedItems.forEach((item) => {
-                let filteredRows = valuesToFilter.flatMap((value, idx) => value === item ? idx : []);
-                rowsToInclude.push(...filteredRows);
-            });
-            let filteredDf = df.loc({rows: rowsToInclude});
+            let filteredDf = df.loc({rows: df['地点'].eq(selectedLocation).and(df['发现物/事件'].apply((x)=>{return selectedItems.includes(x)}))})
             // 计算最佳路线
             const eventNodes = generateNodesByDf(filteredDf);
             let [shortestPath, minSteps] = findShortestTspPath(eventNodes);
